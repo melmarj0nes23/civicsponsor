@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { ExternalLink, Menu, X } from 'lucide-react';
+import { BETTERGOV_COMMUNITY_LINKS, MAINTAINER_CONTACT_URL } from '../lib/seo.ts';
 
 interface LayoutProps {
   children: ReactNode;
@@ -159,8 +160,8 @@ export function Layout({ children }: LayoutProps) {
 
       <footer className="bg-civic-surface border-t border-civic-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 pb-10 sm:pb-12 border-b border-civic-border">
-            <div className="md:col-span-5 space-y-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 sm:pb-12 border-b border-civic-border">
+            <div className="sm:col-span-2 lg:col-span-4 space-y-3.5">
               <Link
                 to="/"
                 className="inline-flex items-center gap-2.5 font-display text-base font-extrabold tracking-tight text-civic-ink"
@@ -183,7 +184,7 @@ export function Layout({ children }: LayoutProps) {
               </p>
             </div>
 
-            <div className="md:col-span-2 space-y-3">
+            <div className="lg:col-span-2 space-y-3">
               <h2 className="text-xs font-semibold tracking-wide text-slate-900">Directory</h2>
               <ul className="space-y-2.5 text-sm text-slate-600">
                 <li>
@@ -214,37 +215,54 @@ export function Layout({ children }: LayoutProps) {
               </ul>
             </div>
 
-            <div className="md:col-span-2 space-y-3">
-              <h2 className="text-xs font-semibold tracking-wide text-slate-900">Legal</h2>
+            <div className="lg:col-span-3 space-y-3">
+              <h2 className="text-xs font-semibold tracking-wide text-slate-900">
+                BetterGovPH Community
+              </h2>
               <ul className="space-y-2.5 text-sm text-slate-600">
-                <li>
-                  <Link to="/privacy" className="hover:text-civic-primary transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className="hover:text-civic-primary transition-colors">
-                    Terms of Use
-                  </Link>
-                </li>
+                {BETTERGOV_COMMUNITY_LINKS.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 hover:text-civic-primary transition-colors"
+                    >
+                      <span>{item.label}</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <div className="md:col-span-3 space-y-3">
-              <h2 className="text-xs font-semibold tracking-wide text-slate-900">
-                Community Contact
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Questions about listing a civic tech project or coordinating community support?
-              </p>
-              <a
-                href="https://facebook.com/melmarj0nes23"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-sm font-semibold text-civic-primary hover:underline break-all sm:break-normal"
-              >
-                https://facebook.com/melmarj0nes23
-              </a>
+            <div className="sm:col-span-2 lg:col-span-3 space-y-5">
+              <div className="space-y-2.5">
+                <h2 className="text-xs font-semibold tracking-wide text-slate-900">
+                  Community Contact
+                </h2>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Questions about listing a civic tech project or coordinating community support?
+                </p>
+                <a
+                  href={MAINTAINER_CONTACT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-civic-primary hover:underline break-all sm:break-normal"
+                >
+                  <span>{MAINTAINER_CONTACT_URL}</span>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                </a>
+              </div>
+
+              <div className="pt-4 border-t border-civic-border/80 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-600">
+                <Link to="/privacy" className="hover:text-civic-primary transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link to="/terms" className="hover:text-civic-primary transition-colors">
+                  Terms of Use
+                </Link>
+              </div>
             </div>
           </div>
 

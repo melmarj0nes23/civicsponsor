@@ -8,4 +8,5 @@ export interface PagesContext<P extends Record<string, string> = Record<string, 
   request: Request;
   env: PagesEnv;
   params: P;
+  next: (input?: Request | string, init?: RequestInit) => Promise<Response>;
 }

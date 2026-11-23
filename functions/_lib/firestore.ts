@@ -197,6 +197,113 @@ export async function getProjectDocument(
   return fetchFirestoreDocument(config, 'projects', projectId);
 }
 
+interface FirestoreQueryRow {
+  document?: FirestoreRestDoc;
+}
+
+export async function listPublicProjects(
+  config: FirestoreRestConfig,
+  limit = 500,
+): Promise<ProjectRecord[]> {
+  const url = `${documentsBaseUrl(config)}:runQuery?key=${encodeURIComponent(config.apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'projects' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'isPublic' },
+            op: 'EQUAL',
+            value: { booleanValue: true },
+          },
+        },
+        limit,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Firestore listPublicProjects failed (${res.status}): ${text}`);
+  }
+
+  const rows = (await res.json()) as FirestoreQueryRow[];
+  const projects: ProjectRecord[] = [];
+  for (const row of rows) {
+    if (row.document?.fields) {
+      const decoded = decodeDocumentFields(row.document.fields);
+      if (decoded.isPublic === true) {
+        projects.push(serializeProjectData(decoded));
+      }
+    }
+  }
+  return projects;
+}
+
+const SLUG_PROJECT_ID_PATTERN = /(blgu-\d{4}-[a-z0-9]{6})$/i;
+
+export async function getProjectBySlug(
+  rawSlug: string,
+  config: FirestoreRestConfig,
+): Promise<ProjectRecord | null> {
+  const slug = rawSlug.trim();
+  if (!slug || slug.length > 200) return null;
+
+  const idMatch = slug.match(SLUG_PROJECT_ID_PATTERN);
+  if (idMatch) {
+    const candidateId = idMatch[1].toUpperCase();
+    const docData = await getProjectDocument(candidateId, config);
+    if (docData && docData.isPublic === true) {
+      return serializeProjectData(docData);
+    }
+  }
+
+  const url = `${documentsBaseUrl(config)}:runQuery?key=${encodeURIComponent(config.apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'projects' }],
+        where: {
+          compositeFilter: {
+            op: 'AND',
+            filters: [
+              {
+                fieldFilter: {
+                  field: { fieldPath: 'isPublic' },
+                  op: 'EQUAL',
+                  value: { booleanValue: true },
+                },
+              },
+              {
+                fieldFilter: {
+                  field: { fieldPath: 'slug' },
+                  op: 'EQUAL',
+                  value: { stringValue: slug },
+                },
+              },
+            ],
+          },
+        },
+        limit: 1,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const rows = (await res.json()) as FirestoreQueryRow[];
+  const firstDoc = rows.find((r) => r.document?.fields)?.document;
+  if (!firstDoc?.fields) return null;
+  const decoded = decodeDocumentFields(firstDoc.fields);
+  return decoded.isPublic === true ? serializeProjectData(decoded) : null;
+}
+
 export async function commitWrites(
   config: FirestoreRestConfig,
   writes: unknown[],

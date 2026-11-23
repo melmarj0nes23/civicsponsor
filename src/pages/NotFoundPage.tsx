@@ -1,11 +1,17 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME } from '../lib/seo.ts';
 
 export function NotFoundPage() {
-  useEffect(() => {
-    document.title = 'Page Not Found — BetterLGU Civic Sponsorship';
-  }, []);
+  const { pathname } = useLocation();
+
+  useSeo({
+    title: `Page Not Found — ${SITE_NAME}`,
+    description: 'The requested page could not be found on BetterLGU CivicSponsor.',
+    path: pathname,
+    noIndex: true,
+  });
 
   return (
     <div className="bg-civic-surface py-24 min-h-[65vh]">

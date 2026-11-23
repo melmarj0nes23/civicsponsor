@@ -1,10 +1,25 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME, buildBreadcrumbJsonLd } from '../lib/seo.ts';
 
 export function PrivacyPage() {
-  useEffect(() => {
-    document.title = 'Privacy Policy — BetterLGU Civic Sponsorship';
-  }, []);
+  const privacyJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Privacy Policy', path: '/privacy' },
+      ]),
+    [],
+  );
+
+  useSeo({
+    title: `Privacy Policy — ${SITE_NAME}`,
+    description:
+      'Read how BetterLGU CivicSponsor handles public project submissions, private management link security, and abuse prevention with zero user tracking accounts.',
+    path: '/privacy',
+    jsonLd: privacyJsonLd,
+  });
 
   return (
     <div>
@@ -15,7 +30,7 @@ export function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-xs text-slate-500">
-            Effective Date: November 2026 · BetterLGU Civic Sponsorship (CivicSponsor)
+            Effective Date: November 2026 · BetterLGU CivicSponsor
           </p>
         </div>
       </header>

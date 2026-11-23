@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, PlusCircle } from 'lucide-react';
 import { CivicImage } from '../components/CivicImage.tsx';
@@ -7,6 +6,8 @@ import {
   ProjectAccordionSkeleton,
 } from '../components/ProjectAccordionList.tsx';
 import { useProjects } from '../hooks/useProjects.ts';
+import { useSeo } from '../hooks/useSeo.ts';
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE } from '../lib/seo.ts';
 
 const HERO_LOGO_PATH = '/src/assets/images/bettergov-primary.png';
 
@@ -47,9 +48,11 @@ export function HomePage() {
   const { projects, stats, loading, error } = useProjects();
   const recentProjects = projects.slice(0, 6);
 
-  useEffect(() => {
-    document.title = 'BetterLGU Civic Sponsorship — Open Civic Tech Directory';
-  }, []);
+  useSeo({
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    path: '/',
+  });
 
   return (
     <div>
@@ -203,7 +206,7 @@ export function HomePage() {
               id="how-it-works-heading"
               className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-civic-ink mb-3"
             >
-              How BetterLGU Civic Sponsorship Works
+              How BetterLGU CivicSponsor Works
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
               Designed for zero gatekeeping. Community builders publish directly and sponsors

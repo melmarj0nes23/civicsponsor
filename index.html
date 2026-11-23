@@ -3,36 +3,128 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BetterLGU Civic Sponsorship — Open Civic Tech Directory</title>
+    <title>BetterLGU CivicSponsor — Philippine Civic Tech Directory</title>
     <meta
       name="description"
-      content="An open, community-driven civic technology sponsorship directory connecting Philippine LGU civic tech builders with sponsors for domains and hosting."
+      content="Discover and sponsor independent Philippine LGU civic technology projects. Connect directly with builders needing domain and hosting support on BetterLGU CivicSponsor."
     />
+    <meta
+      name="keywords"
+      content="BetterLGU CivicSponsor, BetterGovPH, BetterLGU, Philippine civic technology, LGU digital tools, domain sponsorship, hosting sponsorship, open civic tech Philippines"
+    />
+    <meta name="author" content="BetterLGU CivicSponsor" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <link rel="canonical" href="https://civicsponsor.betteralcala.org/" />
     <meta name="theme-color" content="#0038a8" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta property="og:title" content="BetterLGU Civic Sponsorship — Open Civic Tech Directory" />
+
+    <!-- OpenGraph / Facebook / Messenger -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="BetterLGU CivicSponsor" />
+    <meta property="og:locale" content="en_PH" />
+    <meta property="og:url" content="https://civicsponsor.betteralcala.org/" />
+    <meta property="og:title" content="BetterLGU CivicSponsor — Philippine Civic Tech Directory" />
     <meta
       property="og:description"
-      content="Discover and sponsor independent civic technology projects built for Local Government Units across the Philippines."
+      content="Discover and sponsor independent Philippine LGU civic technology projects. Connect directly with builders needing domain and hosting support."
     />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icon-512.png" />
+    <meta property="og:image" content="https://civicsponsor.betteralcala.org/og-image.png" />
+    <meta
+      property="og:image:secure_url"
+      content="https://civicsponsor.betteralcala.org/og-image.png"
+    />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:logo" content="/logo.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="BetterLGU CivicSponsor — Open Philippine Civic Technology Directory"
+    />
+    <meta property="og:logo" content="https://civicsponsor.betteralcala.org/logo.png" />
+
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="/icon-512.png" />
+    <meta name="twitter:url" content="https://civicsponsor.betteralcala.org/" />
+    <meta name="twitter:title" content="BetterLGU CivicSponsor — Philippine Civic Tech Directory" />
+    <meta
+      name="twitter:description"
+      content="Discover and sponsor independent Philippine LGU civic technology projects. Connect directly with builders needing domain and hosting support."
+    />
+    <meta name="twitter:image" content="https://civicsponsor.betteralcala.org/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="BetterLGU CivicSponsor — Open Philippine Civic Technology Directory"
+    />
+
+    <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "BetterLGU Civic Sponsorship",
-        "logo": "/logo.png",
-        "image": "/icon-512.png"
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://civicsponsor.betteralcala.org/#organization",
+            "name": "BetterLGU CivicSponsor",
+            "alternateName": "CivicSponsor",
+            "url": "https://civicsponsor.betteralcala.org/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://civicsponsor.betteralcala.org/logo.png"
+            },
+            "image": "https://civicsponsor.betteralcala.org/og-image.png",
+            "description": "An open, community-driven Philippine civic technology sponsorship directory inspired by BetterGovPH and BetterLGU.",
+            "sameAs": [
+              "https://web.facebook.com/bettergovph",
+              "https://web.facebook.com/groups/bettergovph",
+              "https://discord.gg/bettergovph",
+              "https://m.me/ch/T9BIBxaAXbA0z6CT/",
+              "https://facebook.com/melmarj0nes23"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://civicsponsor.betteralcala.org/#website",
+            "url": "https://civicsponsor.betteralcala.org/",
+            "name": "BetterLGU CivicSponsor",
+            "description": "Discover and sponsor independent Philippine LGU civic technology projects.",
+            "inLanguage": "en-PH",
+            "publisher": {
+              "@id": "https://civicsponsor.betteralcala.org/#organization"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://civicsponsor.betteralcala.org/projects?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://civicsponsor.betteralcala.org/#webapp",
+            "name": "BetterLGU CivicSponsor",
+            "url": "https://civicsponsor.betteralcala.org/",
+            "applicationCategory": "ReferenceApplication",
+            "operatingSystem": "All",
+            "browserRequirements": "Requires JavaScript. Works on modern desktop and mobile browsers.",
+            "description": "Open civic technology sponsorship directory connecting independent Philippine LGU civic builders with domain and hosting sponsors.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "PHP"
+            }
+          }
+        ]
       }
     </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -1,6 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, KeyRound, Loader2, ShieldCheck } from 'lucide-react';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME } from '../lib/seo.ts';
 import { extractManagementToken } from '../lib/validation.ts';
 
 export function ManageAccessPage() {
@@ -9,9 +11,13 @@ export function ManageAccessPage() {
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  useEffect(() => {
-    document.title = 'Manage a Listing — BetterLGU Civic Sponsorship';
-  }, []);
+  useSeo({
+    title: `Manage a Listing — ${SITE_NAME}`,
+    description:
+      'Use your private management link or token to update project details or mark a listing as Sponsored on BetterLGU CivicSponsor.',
+    path: '/manage',
+    noIndex: true,
+  });
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -48,115 +54,119 @@ export function ManageAccessPage() {
 
   return (
     <div>
-      <section className="bg-white border-b border-civic-border py-12 sm:py-14">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white border-b border-civic-border py-10 sm:py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-xs font-semibold text-civic-primary mb-2">Maintainer Access</p>
-          <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-civic-ink mb-3">
+          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-civic-ink mb-3">
             Update Sponsorship Status or Edit a Listing
           </h1>
-          <p className="text-base text-slate-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl">
             Paste the private management link or token generated when you submitted your project to
             mark it as <strong>Sponsored</strong> or update listing details—no login required.
           </p>
         </div>
       </section>
 
-      <div className="bg-civic-surface py-12 lg:py-16 min-h-[55vh]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="bg-white border border-civic-border rounded-xl p-6 sm:p-10 shadow-[0_1px_3px_rgba(11,18,32,0.04)] space-y-6"
-          >
-            <div className="space-y-2">
-              <label
-                htmlFor="management-token-input"
-                className="block text-sm font-semibold text-civic-ink"
-              >
-                Private Management Link or Token <span className="text-red-600">*</span>
-              </label>
-              <div className="relative">
-                <KeyRound
-                  className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                  aria-hidden="true"
-                />
-                <input
-                  id="management-token-input"
-                  name="managementToken"
-                  type="text"
-                  autoComplete="off"
-                  spellCheck={false}
-                  disabled={verifying}
-                  value={tokenInput}
-                  onChange={(e) => {
-                    setTokenInput(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="Paste https://.../manage/your-token or just the private token"
-                  className="w-full pl-10 pr-4 py-3 min-h-12 sm:min-h-0 text-base sm:text-sm font-mono bg-white border border-slate-300 rounded-lg text-civic-ink placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-civic-primary/20 focus:border-civic-primary"
-                />
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                You can paste either the full management URL or only the secret token string at the
-                end of the link.
-              </p>
-            </div>
+      <div className="bg-civic-surface py-10 sm:py-14 min-h-[55vh]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              className="lg:col-span-7 bg-white border border-civic-border rounded-xl p-6 sm:p-8 shadow-[0_1px_3px_rgba(11,18,32,0.04)] flex flex-col justify-between space-y-6"
+            >
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="management-token-input"
+                    className="block text-sm font-semibold text-civic-ink"
+                  >
+                    Private Management Link or Token <span className="text-red-600">*</span>
+                  </label>
+                  <div className="relative">
+                    <KeyRound
+                      className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="management-token-input"
+                      name="managementToken"
+                      type="text"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={verifying}
+                      value={tokenInput}
+                      onChange={(e) => {
+                        setTokenInput(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="Paste https://.../manage/your-token or just the private token"
+                      className="w-full pl-10 pr-4 py-3 min-h-12 sm:min-h-0 text-base sm:text-sm font-mono bg-white border border-slate-300 rounded-lg text-civic-ink placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-civic-primary/20 focus:border-civic-primary"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    You can paste either the full management URL or only the secret token string at
+                    the end of the link.
+                  </p>
+                </div>
 
-            {error && (
-              <div
-                role="alert"
-                className="bg-red-50 border border-red-200 rounded-lg p-3.5 text-sm text-red-800"
-              >
-                {error}
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3.5 sm:gap-4 pt-2">
-              <button
-                type="submit"
-                disabled={verifying}
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 min-h-12 sm:min-h-0 text-sm font-semibold text-white bg-civic-primary hover:bg-civic-primary-hover disabled:opacity-60 rounded-lg shadow-[0_1px_2px_rgba(0,56,168,0.2)] transition-colors cursor-pointer whitespace-nowrap"
-              >
-                {verifying ? (
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                {error && (
+                  <div
+                    role="alert"
+                    className="bg-red-50 border border-red-200 rounded-lg p-3.5 text-sm text-red-800"
+                  >
+                    {error}
+                  </div>
                 )}
-                <span>{verifying ? 'Verifying Link...' : 'Open Management Page'}</span>
-              </button>
+              </div>
 
-              <Link
-                to="/projects"
-                className="text-center sm:text-left text-sm font-medium text-slate-600 hover:text-civic-primary transition-colors py-1"
-              >
-                Browse Public Directory
-              </Link>
-            </div>
-          </form>
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3.5 sm:gap-4 pt-2 border-t border-slate-100">
+                <button
+                  type="submit"
+                  disabled={verifying}
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 min-h-12 sm:min-h-0 text-sm font-semibold text-white bg-civic-primary hover:bg-civic-primary-hover disabled:opacity-60 rounded-lg shadow-[0_1px_2px_rgba(0,56,168,0.2)] transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {verifying ? (
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  )}
+                  <span>{verifying ? 'Verifying Link...' : 'Open Management Page'}</span>
+                </button>
 
-          <section className="bg-white border border-civic-border rounded-xl p-6 space-y-3">
-            <div className="flex items-center gap-2.5 text-civic-ink">
-              <ShieldCheck className="w-5 h-5 text-civic-primary shrink-0" aria-hidden="true" />
-              <h2 className="font-display text-base font-bold">
-                How private project management works
-              </h2>
-            </div>
-            <ul className="space-y-2 text-sm text-slate-600 leading-relaxed list-disc pl-5">
-              <li>
-                Whenever you publish a project on BetterLGU Civic Sponsorship, a unique private
-                management link is generated immediately on your confirmation screen.
-              </li>
-              <li>
-                Only the holder of that link can change a project&apos;s status from{' '}
-                <strong>Awaiting Sponsorship</strong> to <strong>Sponsored</strong> or edit its
-                listing details.
-              </li>
-              <li>
-                You can also update a project&apos;s sponsorship status directly from its public
-                project page using the <strong>Update Status</strong> option.
-              </li>
-            </ul>
-          </section>
+                <Link
+                  to="/projects"
+                  className="text-center sm:text-left text-sm font-medium text-slate-600 hover:text-civic-primary transition-colors py-1"
+                >
+                  Browse Public Directory
+                </Link>
+              </div>
+            </form>
+
+            <section className="lg:col-span-5 bg-white border border-civic-border rounded-xl p-6 sm:p-8 shadow-[0_1px_3px_rgba(11,18,32,0.04)] space-y-4">
+              <div className="flex items-center gap-2.5 text-civic-ink pb-3.5 border-b border-slate-100">
+                <ShieldCheck className="w-5 h-5 text-civic-primary shrink-0" aria-hidden="true" />
+                <h2 className="font-display text-base font-bold">
+                  How private project management works
+                </h2>
+              </div>
+              <ul className="space-y-3 text-sm text-slate-600 leading-relaxed list-disc pl-5">
+                <li>
+                  Whenever you publish a project on BetterLGU CivicSponsor, a unique private
+                  management link is generated immediately on your confirmation screen.
+                </li>
+                <li>
+                  Only the holder of that link can change a project&apos;s status from{' '}
+                  <strong>Awaiting Sponsorship</strong> to <strong>Sponsored</strong> or edit its
+                  listing details.
+                </li>
+                <li>
+                  You can also update a project&apos;s sponsorship status directly from its public
+                  project page using the <strong>Update Status</strong> option.
+                </li>
+              </ul>
+            </section>
+          </div>
         </div>
       </div>
     </div>

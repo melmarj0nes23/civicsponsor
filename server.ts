@@ -6,15 +6,21 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  collection,
   deleteField,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
+  limit,
+  query,
   serverTimestamp,
   Timestamp,
+  where,
   writeBatch,
   type DocumentData,
 } from 'firebase/firestore';
+import { buildSitemapXml, injectRouteSeoIntoHtml } from './functions/_lib/seoHtml.ts';
 import {
   buildProjectSlug,
   validateProjectSubmission,
@@ -152,6 +158,22 @@ async function createServer() {
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
+  });
+
+  app.get('/sitemap.xml', async (_req, res) => {
+    try {
+      const q = query(collection(db, 'projects'), where('isPublic', '==', true), limit(500));
+      const snap = await getDocs(q);
+      const projects = snap.docs.map((d) => serializeProject(d.data()));
+      const xml = buildSitemapXml(projects);
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.send(xml);
+    } catch (error) {
+      console.error('Sitemap generation failed:', error instanceof Error ? error.message : error);
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      res.send(buildSitemapXml([]));
+    }
   });
 
   // Anonymous, open project publication endpoint
@@ -471,15 +493,52 @@ async function createServer() {
     app.use(vite.middlewares);
   } else {
     const distDir = path.resolve(__dirname, 'dist');
-    app.use(express.static(distDir));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distDir, 'index.html'));
+    const distIndexHtml = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8');
+    app.use(express.static(distDir, { index: false }));
+    app.get('*', async (req, res) => {
+      const pathname = req.path || '/';
+      let project: ProjectRecord | null = null;
+
+      if (pathname.startsWith('/projects/')) {
+        const slug = decodeURIComponent(pathname.slice('/projects/'.length).replace(/\/+$/, ''));
+        if (slug && !slug.includes('/')) {
+          try {
+            const idMatch = slug.match(/(blgu-\d{4}-[a-z0-9]{6})$/i);
+            if (idMatch) {
+              const snap = await getDoc(doc(db, 'projects', idMatch[1].toUpperCase()));
+              if (snap.exists() && snap.data().isPublic === true) {
+                project = serializeProject(snap.data());
+              }
+            }
+            if (!project) {
+              const q = query(
+                collection(db, 'projects'),
+                where('isPublic', '==', true),
+                where('slug', '==', slug),
+                limit(1),
+              );
+              const snap = await getDocs(q);
+              if (!snap.empty) {
+                project = serializeProject(snap.docs[0].data());
+              }
+            }
+          } catch {
+            project = null;
+          }
+        }
+      }
+
+      if (pathname === '/manage' || pathname.startsWith('/manage/')) {
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      }
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(injectRouteSeoIntoHtml(distIndexHtml, pathname, project));
     });
   }
 
   const port = Number(process.env.PORT) || 3000;
   app.listen(port, '0.0.0.0', () => {
-    console.log(`BetterLGU Civic Sponsorship server listening on http://0.0.0.0:${port}`);
+    console.log(`BetterLGU CivicSponsor server listening on http://0.0.0.0:${port}`);
   });
 }
 

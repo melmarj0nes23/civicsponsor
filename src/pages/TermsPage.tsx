@@ -1,10 +1,25 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME, buildBreadcrumbJsonLd } from '../lib/seo.ts';
 
 export function TermsPage() {
-  useEffect(() => {
-    document.title = 'Terms of Use — BetterLGU Civic Sponsorship';
-  }, []);
+  const termsJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Terms of Use', path: '/terms' },
+      ]),
+    [],
+  );
+
+  useSeo({
+    title: `Terms of Use — ${SITE_NAME}`,
+    description:
+      'Review the Terms of Use for BetterLGU CivicSponsor, covering open directory participation, maintainer responsibilities, and direct sponsor coordination.',
+    path: '/terms',
+    jsonLd: termsJsonLd,
+  });
 
   return (
     <div>
@@ -15,7 +30,7 @@ export function TermsPage() {
             Terms of Use
           </h1>
           <p className="text-xs text-slate-500">
-            Effective Date: November 2026 · BetterLGU Civic Sponsorship (CivicSponsor)
+            Effective Date: November 2026 · BetterLGU CivicSponsor
           </p>
         </div>
       </header>

@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { RotateCcw, Search } from 'lucide-react';
 import {
   ProjectAccordionList,
   ProjectAccordionSkeleton,
 } from '../components/ProjectAccordionList.tsx';
 import { useProjects } from '../hooks/useProjects.ts';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME, SITE_URL, buildBreadcrumbJsonLd } from '../lib/seo.ts';
 import {
   PHILIPPINE_PROVINCES,
   SPONSORSHIP_TYPE_OPTIONS,
@@ -15,17 +18,43 @@ type SortOption = 'recent' | 'oldest' | 'awaiting-first' | 'sponsored-first';
 type StatusFilter = 'all' | SponsorshipStatus;
 
 export function DirectoryPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { projects, loading, error } = useProjects();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [provinceFilter, setProvinceFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
 
-  useEffect(() => {
-    document.title = 'Project Directory — BetterLGU Civic Sponsorship';
-  }, []);
+  const directoryJsonLd = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@graph': [
+        buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Project Directory', path: '/projects' },
+        ]),
+        {
+          '@type': 'CollectionPage',
+          name: `Public Project Directory — ${SITE_NAME}`,
+          url: `${SITE_URL}/projects`,
+          description:
+            'Browse Philippine LGU civic technology projects awaiting domain or hosting sponsorship alongside sponsored community initiatives.',
+          isPartOf: { '@id': `${SITE_URL}/#website` },
+        },
+      ],
+    }),
+    [],
+  );
+
+  useSeo({
+    title: `Project Directory — ${SITE_NAME}`,
+    description:
+      'Explore independent Philippine LGU civic technology projects seeking domain and hosting sponsorship, filterable by province, status, and infrastructure need.',
+    path: '/projects',
+    jsonLd: directoryJsonLd,
+  });
 
   const availableProvinces = useMemo(() => {
     const set = new Set<string>(PHILIPPINE_PROVINCES);
@@ -108,6 +137,9 @@ export function DirectoryPage() {
     setTypeFilter('all');
     setProvinceFilter('all');
     setSortBy('recent');
+    if (searchParams.has('q')) {
+      setSearchParams({}, { replace: true });
+    }
   };
 
   return (

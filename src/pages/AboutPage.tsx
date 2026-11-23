@@ -1,6 +1,13 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, PlusCircle } from 'lucide-react';
+import { ArrowRight, ExternalLink, PlusCircle } from 'lucide-react';
+import { useSeo } from '../hooks/useSeo.ts';
+import {
+  BETTERGOV_COMMUNITY_LINKS,
+  SITE_NAME,
+  SITE_URL,
+  buildBreadcrumbJsonLd,
+} from '../lib/seo.ts';
 
 const PRINCIPLES = [
   {
@@ -26,9 +33,34 @@ const PRINCIPLES = [
 ];
 
 export function AboutPage() {
-  useEffect(() => {
-    document.title = 'About — BetterLGU Civic Sponsorship';
-  }, []);
+  const aboutJsonLd = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@graph': [
+        buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'About', path: '/about' },
+        ]),
+        {
+          '@type': 'AboutPage',
+          name: `About ${SITE_NAME}`,
+          url: `${SITE_URL}/about`,
+          description:
+            'Learn how BetterLGU CivicSponsor connects independent Philippine civic technology builders with domain and hosting sponsors.',
+          isPartOf: { '@id': `${SITE_URL}/#website` },
+        },
+      ],
+    }),
+    [],
+  );
+
+  useSeo({
+    title: `About — ${SITE_NAME}`,
+    description:
+      'Learn how BetterLGU CivicSponsor supports independent Philippine LGU civic technology builders and connects with the BetterGovPH community.',
+    path: '/about',
+    jsonLd: aboutJsonLd,
+  });
 
   return (
     <div>
@@ -120,10 +152,62 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Independence Disclaimer */}
-      <section aria-labelledby="disclaimer-heading" className="bg-white py-16">
+      {/* BetterGovPH Community Channels */}
+      <section
+        aria-labelledby="community-channels-heading"
+        className="bg-white border-b border-civic-border py-14 sm:py-16"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-civic-surface border border-civic-border rounded-xl p-6 sm:p-8">
+          <div className="max-w-2xl mb-8">
+            <p className="text-xs font-semibold text-civic-primary mb-2">BetterGovPH Ecosystem</p>
+            <h2
+              id="community-channels-heading"
+              className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-civic-ink mb-2.5"
+            >
+              Join the BetterGovPH Community
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Connect with volunteer engineers, designers, and civic advocates building open digital
+              public infrastructure across the Philippines.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {BETTERGOV_COMMUNITY_LINKS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-civic-surface hover:bg-white border border-civic-border hover:border-civic-primary/50 rounded-xl p-5 flex flex-col justify-between gap-4 transition-colors"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-display text-base font-bold text-civic-ink group-hover:text-civic-primary transition-colors">
+                      {item.label}
+                    </h3>
+                    <ExternalLink
+                      className="w-4 h-4 text-slate-400 group-hover:text-civic-primary shrink-0 transition-colors"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-civic-primary">
+                  Open {item.label}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Independence Disclaimer */}
+      <section aria-labelledby="disclaimer-heading" className="bg-civic-surface py-14 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white border border-civic-border rounded-xl p-6 sm:p-8">
             <h2
               id="disclaimer-heading"
               className="font-display text-lg font-bold text-civic-ink mb-3"

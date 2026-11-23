@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -10,6 +10,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { ProjectFormFields, type ProjectFormValues } from '../components/ProjectFormFields.tsx';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME, buildBreadcrumbJsonLd } from '../lib/seo.ts';
 import { validateProjectSubmission } from '../lib/validation.ts';
 import {
   SponsorshipType,
@@ -39,9 +41,22 @@ export function SubmitProjectPage() {
   const [confirmation, setConfirmation] = useState<SubmissionConfirmation | null>(null);
   const [copiedKey, setCopiedKey] = useState<'public' | 'manage' | null>(null);
 
-  useEffect(() => {
-    document.title = 'Submit a Project — BetterLGU Civic Sponsorship';
-  }, []);
+  const submitJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Submit a Project', path: '/submit' },
+      ]),
+    [],
+  );
+
+  useSeo({
+    title: `Submit a Civic Tech Project — ${SITE_NAME}`,
+    description:
+      'Publish your Philippine LGU civic technology project directly to BetterLGU CivicSponsor for domain or hosting sponsorship—no account or approval queue required.',
+    path: '/submit',
+    jsonLd: submitJsonLd,
+  });
 
   const handleFieldChange = <K extends keyof ProjectFormValues>(
     field: K,

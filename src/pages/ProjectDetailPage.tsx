@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { StatusLabel } from '../components/StatusLabel.tsx';
 import { useProjectBySlug } from '../hooks/useProjects.ts';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME, buildProjectSeoMetadata } from '../lib/seo.ts';
 import {
   buildMailtoHref,
   extractManagementToken,
@@ -59,13 +61,25 @@ export function ProjectDetailPage() {
     }
   }, [location.hash]);
 
-  useEffect(() => {
-    if (project) {
-      document.title = `${project.projectName} (${project.lguName}) — BetterLGU Civic Sponsorship`;
-    } else {
-      document.title = 'Project Details — BetterLGU Civic Sponsorship';
-    }
+  const projectSeo = useMemo(() => {
+    if (!project) return null;
+    return buildProjectSeoMetadata(project);
   }, [project]);
+
+  useSeo({
+    title: projectSeo
+      ? projectSeo.title
+      : !loading && !error
+        ? `Project Not Found — ${SITE_NAME}`
+        : `Project Details — ${SITE_NAME}`,
+    description: projectSeo
+      ? projectSeo.description
+      : 'Inspect project details, deployment links, repository, and maintainer contact details on BetterLGU CivicSponsor.',
+    path: project ? `/projects/${project.slug}` : `/projects/${slug ?? ''}`,
+    ogType: projectSeo ? 'article' : 'website',
+    noIndex: !loading && !error && !project,
+    jsonLd: projectSeo?.jsonLd ?? null,
+  });
 
   if (loading) {
     return (

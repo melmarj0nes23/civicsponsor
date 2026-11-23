@@ -8,3 +8,9 @@
 
 /index.html
   Cache-Control: no-cache
+
+/manage
+  X-Robots-Tag: noindex, nofollow
+
+/manage/*
+  X-Robots-Tag: noindex, nofollow

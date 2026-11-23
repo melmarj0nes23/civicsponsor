@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /manage
+Disallow: /manage/
+Disallow: /api/
+
+Sitemap: https://civicsponsor.betteralcala.org/sitemap.xml

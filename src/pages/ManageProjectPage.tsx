@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { ProjectFormFields, type ProjectFormValues } from '../components/ProjectFormFields.tsx';
 import { StatusLabel } from '../components/StatusLabel.tsx';
+import { useSeo } from '../hooks/useSeo.ts';
+import { SITE_NAME } from '../lib/seo.ts';
 import { formatDisplayDate, validateProjectUpdate } from '../lib/validation.ts';
 import {
   FIELD_LIMITS,
@@ -52,9 +54,12 @@ export function ManageProjectPage() {
   const [saving, setSaving] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
-  useEffect(() => {
-    document.title = 'Manage Project Listing — BetterLGU Civic Sponsorship';
-  }, []);
+  useSeo({
+    title: project ? `Manage: ${project.projectName} — ${SITE_NAME}` : `Manage Project Listing — ${SITE_NAME}`,
+    description: 'Private maintainer controls for updating a BetterLGU CivicSponsor listing.',
+    path: '/manage',
+    noIndex: true,
+  });
 
   useEffect(() => {
     if (!token) {
@@ -85,7 +90,6 @@ export function ManageProjectPage() {
         setValues(toFormValues(loaded));
         setSponsorshipStatus(loaded.sponsorshipStatus);
         setConfirmationNote(loaded.sponsorshipConfirmationNote || '');
-        document.title = `Manage: ${loaded.projectName} — BetterLGU Civic Sponsorship`;
       } catch {
         if (!cancelled) {
           setLoadError('Network error while verifying your private management link.');
@@ -241,7 +245,7 @@ export function ManageProjectPage() {
   if (loading) {
     return (
       <div className="bg-civic-surface py-20 min-h-[65vh]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white border border-civic-border rounded-xl p-10 text-center space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-civic-primary mx-auto" aria-hidden="true" />
             <p className="text-sm text-slate-600">Verifying private management link...</p>
@@ -254,8 +258,8 @@ export function ManageProjectPage() {
   if (loadError || !project || !values) {
     return (
       <div className="bg-civic-surface py-20 min-h-[65vh]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white border border-civic-border rounded-xl p-8 space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white border border-civic-border rounded-xl p-8 max-w-2xl space-y-4">
             <div className="flex items-center gap-3 text-red-700">
               <ShieldAlert className="w-6 h-6 shrink-0" aria-hidden="true" />
               <h1 className="font-display text-xl font-bold text-civic-ink">
@@ -288,7 +292,7 @@ export function ManageProjectPage() {
   return (
     <div>
       <header className="bg-white border-b border-civic-border py-10 lg:py-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2.5 mb-2">
               <span className="font-mono text-xs font-medium text-slate-500">
@@ -319,7 +323,7 @@ export function ManageProjectPage() {
       </header>
 
       <div className="bg-civic-surface py-10 lg:py-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div
             role="region"
             aria-label="Private management link confidentiality warning"
