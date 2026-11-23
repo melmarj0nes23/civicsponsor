@@ -43,12 +43,6 @@
           "maxLength": 1500,
           "description": "Overview of what the civic tech project does for citizens."
         },
-        "objectives": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 2000,
-          "description": "Measurable public-interest goals of the project."
-        },
         "temporaryUrl": {
           "type": "string",
           "minLength": 10,
@@ -138,7 +132,6 @@
         "lguName",
         "province",
         "description",
-        "objectives",
         "temporaryUrl",
         "repositoryUrl",
         "sponsorshipType",

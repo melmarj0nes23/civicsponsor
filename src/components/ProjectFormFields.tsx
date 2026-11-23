@@ -10,7 +10,6 @@ export interface ProjectFormValues {
   lguName: string;
   province: string;
   description: string;
-  objectives: string;
   temporaryUrl: string;
   repositoryUrl: string;
   sponsorshipType: SponsorshipType;
@@ -160,36 +159,6 @@ export function ProjectFormFields({
             {errors.description && (
               <p id="description-error" className="text-xs text-red-700 mt-1.5">
                 {errors.description}
-              </p>
-            )}
-          </div>
-
-          <div className="md:col-span-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="objectives" className="block text-sm font-semibold text-civic-ink">
-                Project Objectives <span className="text-red-600">*</span>
-              </label>
-              <span className="text-xs text-slate-400 font-mono tabular-nums">
-                {values.objectives.length}/{FIELD_LIMITS.objectives.max}
-              </span>
-            </div>
-            <textarea
-              id="objectives"
-              name="objectives"
-              required
-              rows={4}
-              disabled={disabled}
-              maxLength={FIELD_LIMITS.objectives.max}
-              value={values.objectives}
-              onChange={(e) => onChange('objectives', e.target.value)}
-              placeholder="List the concrete civic goals, public transparency outcomes, or citizen services this project aims to deliver."
-              aria-invalid={Boolean(errors.objectives)}
-              aria-describedby={errors.objectives ? 'objectives-error' : undefined}
-              className={`${inputBaseClass} ${fieldBorderClass(Boolean(errors.objectives))}`}
-            />
-            {errors.objectives && (
-              <p id="objectives-error" className="text-xs text-red-700 mt-1.5">
-                {errors.objectives}
               </p>
             )}
           </div>

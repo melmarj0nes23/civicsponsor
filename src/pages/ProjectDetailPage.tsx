@@ -360,22 +360,13 @@ export function ProjectDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-6">
-              <section className="bg-white border border-civic-border rounded-xl p-6 sm:p-8 shadow-[0_1px_2px_rgba(11,18,32,0.03)] space-y-8">
+              <section className="bg-white border border-civic-border rounded-xl p-6 sm:p-8 shadow-[0_1px_2px_rgba(11,18,32,0.03)]">
                 <div>
                   <h2 className="font-display text-xl font-bold text-civic-ink mb-3">
                     Project Description
                   </h2>
                   <p className="text-base text-slate-700 leading-relaxed whitespace-pre-line">
                     {project.description}
-                  </p>
-                </div>
-
-                <div className="pt-7 border-t border-slate-100">
-                  <h2 className="font-display text-xl font-bold text-civic-ink mb-3">
-                    Project Objectives
-                  </h2>
-                  <p className="text-base text-slate-700 leading-relaxed whitespace-pre-line">
-                    {project.objectives}
                   </p>
                 </div>
               </section>

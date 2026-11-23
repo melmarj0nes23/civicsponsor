@@ -59,7 +59,6 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
         lguName: clean.lguName,
         province: clean.province,
         description: clean.description,
-        objectives: clean.objectives,
         temporaryUrl: clean.temporaryUrl,
         repositoryUrl: clean.repositoryUrl,
         sponsorshipType: clean.sponsorshipType,

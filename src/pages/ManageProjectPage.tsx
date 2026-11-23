@@ -23,7 +23,6 @@ function toFormValues(project: ProjectRecord): ProjectFormValues {
     lguName: project.lguName,
     province: project.province,
     description: project.description,
-    objectives: project.objectives,
     temporaryUrl: project.temporaryUrl,
     repositoryUrl: project.repositoryUrl,
     sponsorshipType: project.sponsorshipType,

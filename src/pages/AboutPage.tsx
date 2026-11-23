@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, PlusCircle } from 'lucide-react';
-import { CivicImage } from '../components/CivicImage.tsx';
-
-const ABOUT_IMAGE_PATH = '/src/assets/images/about_civic_builders_1795438044833.jpg';
 
 const PRINCIPLES = [
   {
@@ -38,16 +35,18 @@ export function AboutPage() {
       {/* Mission Hero Band */}
       <section className="bg-white border-b border-civic-border py-14 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            <div className="lg:col-span-5 space-y-4">
               <p className="text-xs font-semibold text-civic-primary">
                 About CivicSponsor · Inspired by BetterGovPH &amp; BetterLGU
               </p>
               <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-civic-ink leading-[1.15]">
                 Sustaining community-built civic technology across the Philippines.
               </h1>
+            </div>
 
-              <div className="space-y-4 text-base text-slate-600 leading-relaxed max-w-2xl">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-4 text-base text-slate-600 leading-relaxed">
                 <p>
                   CivicSponsor is a community-driven initiative that helps independent civic
                   technology builders connect with potential sponsors.
@@ -89,23 +88,6 @@ export function AboutPage() {
                 </Link>
               </div>
             </div>
-
-            <div className="lg:col-span-5">
-              <figure>
-                <div className="overflow-hidden rounded-xl border border-civic-border bg-slate-100">
-                  <CivicImage
-                    src={ABOUT_IMAGE_PATH}
-                    alt="Filipino civic technology developers and volunteers collaborating around laptops and local district maps"
-                    fallbackTitle="Philippine Civic Tech Volunteers"
-                    className="w-full aspect-[4/3] object-cover"
-                  />
-                </div>
-                <figcaption className="text-xs text-slate-500 mt-3">
-                  Volunteer developers and civic builders collaborating on open municipal digital
-                  tools.
-                </figcaption>
-              </figure>
-            </div>
           </div>
         </div>
       </section>
@@ -141,14 +123,14 @@ export function AboutPage() {
       {/* Independence Disclaimer */}
       <section aria-labelledby="disclaimer-heading" className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-civic-surface border border-civic-border rounded-xl p-6 sm:p-8 max-w-4xl">
+          <div className="bg-civic-surface border border-civic-border rounded-xl p-6 sm:p-8">
             <h2
               id="disclaimer-heading"
               className="font-display text-lg font-bold text-civic-ink mb-3"
             >
               Platform Independence &amp; Disclaimer
             </h2>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed max-w-4xl">
               CivicSponsor is an independent community-driven directory. Listing a project does not
               imply official endorsement by the corresponding LGU, BetterGovPH, or any other
               organization. Sponsorship arrangements are made directly between maintainers and

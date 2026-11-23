@@ -18,7 +18,6 @@ export interface ProjectRecord {
   lguName: string;
   province: string;
   description: string;
-  objectives: string;
   temporaryUrl: string;
   repositoryUrl: string;
   sponsorshipType: SponsorshipType;
@@ -40,7 +39,6 @@ export interface ProjectSubmissionInput {
   lguName: string;
   province: string;
   description: string;
-  objectives: string;
   temporaryUrl: string;
   repositoryUrl: string;
   sponsorshipType: SponsorshipType;
@@ -56,7 +54,6 @@ export interface ProjectUpdateInput {
   lguName: string;
   province: string;
   description: string;
-  objectives: string;
   temporaryUrl: string;
   repositoryUrl: string;
   sponsorshipType: SponsorshipType;
@@ -89,7 +86,6 @@ export const FIELD_LIMITS = {
   lguName: { min: 2, max: 120 },
   province: { min: 2, max: 80 },
   description: { min: 10, max: 1500 },
-  objectives: { min: 10, max: 2000 },
   temporaryUrl: { min: 10, max: 300 },
   repositoryUrl: { min: 10, max: 300 },
   preferredDomain: { min: 3, max: 120 },

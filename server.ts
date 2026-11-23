@@ -77,7 +77,6 @@ function serializeProject(data: DocumentData): ProjectRecord {
     lguName: String(data.lguName ?? ''),
     province: String(data.province ?? ''),
     description: String(data.description ?? ''),
-    objectives: String(data.objectives ?? ''),
     temporaryUrl: String(data.temporaryUrl ?? ''),
     repositoryUrl: String(data.repositoryUrl ?? ''),
     sponsorshipType: (data.sponsorshipType as SponsorshipType) ?? SponsorshipType.DOMAIN,
@@ -188,7 +187,6 @@ async function createServer() {
         lguName: clean.lguName,
         province: clean.province,
         description: clean.description,
-        objectives: clean.objectives,
         temporaryUrl: clean.temporaryUrl,
         repositoryUrl: clean.repositoryUrl,
         sponsorshipType: clean.sponsorshipType,
@@ -310,7 +308,6 @@ async function createServer() {
         lguName: clean.lguName,
         province: clean.province,
         description: clean.description,
-        objectives: clean.objectives,
         temporaryUrl: clean.temporaryUrl,
         repositoryUrl: clean.repositoryUrl,
         sponsorshipType: clean.sponsorshipType,
@@ -330,6 +327,9 @@ async function createServer() {
       }
       if ('sponsorshipReason' in existingData) {
         updateFields.sponsorshipReason = deleteField();
+      }
+      if ('objectives' in existingData) {
+        updateFields.objectives = deleteField();
       }
 
       if (!wasSponsored && isNowSponsored) {
@@ -424,6 +424,9 @@ async function createServer() {
       }
       if ('sponsorshipReason' in existingData) {
         updateFields.sponsorshipReason = deleteField();
+      }
+      if ('objectives' in existingData) {
+        updateFields.objectives = deleteField();
       }
 
       if (!wasSponsored && isNowSponsored) {

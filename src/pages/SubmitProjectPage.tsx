@@ -21,7 +21,6 @@ const INITIAL_VALUES: ProjectFormValues = {
   lguName: '',
   province: '',
   description: '',
-  objectives: '',
   temporaryUrl: '',
   repositoryUrl: '',
   sponsorshipType: SponsorshipType.BOTH,

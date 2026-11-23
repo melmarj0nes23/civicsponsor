@@ -84,6 +84,7 @@ export async function onRequestPatch(context: PagesContext<{ token: string }>): 
     if ('estimatedCost' in existingData) deleteFieldNames.push('estimatedCost');
     if ('currency' in existingData) deleteFieldNames.push('currency');
     if ('sponsorshipReason' in existingData) deleteFieldNames.push('sponsorshipReason');
+    if ('objectives' in existingData) deleteFieldNames.push('objectives');
 
     if (!wasSponsored && isNowSponsored) {
       updateFields.sponsorshipStatus = SponsorshipStatus.SPONSORED;

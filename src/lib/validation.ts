@@ -109,7 +109,6 @@ export interface SanitizedProjectPayload {
   lguName: string;
   province: string;
   description: string;
-  objectives: string;
   temporaryUrl: string;
   repositoryUrl: string;
   sponsorshipType: SponsorshipType;
@@ -134,7 +133,6 @@ function validateCoreFields(
   const lguName = sanitizeText(input.lguName);
   const province = sanitizeText(input.province);
   const description = sanitizeText(input.description, true);
-  const objectives = sanitizeText(input.objectives, true);
   const temporaryUrl = sanitizeText(input.temporaryUrl);
   const repositoryUrl = sanitizeText(input.repositoryUrl);
   const sponsorshipType = sanitizeText(input.sponsorshipType);
@@ -163,13 +161,6 @@ function validateCoreFields(
     description.length > FIELD_LIMITS.description.max
   ) {
     errors.description = `Project description must be between ${FIELD_LIMITS.description.min} and ${FIELD_LIMITS.description.max} characters.`;
-  }
-
-  if (
-    objectives.length < FIELD_LIMITS.objectives.min ||
-    objectives.length > FIELD_LIMITS.objectives.max
-  ) {
-    errors.objectives = `Project objectives must be between ${FIELD_LIMITS.objectives.min} and ${FIELD_LIMITS.objectives.max} characters.`;
   }
 
   if (
@@ -237,7 +228,6 @@ function validateCoreFields(
       lguName,
       province,
       description,
-      objectives,
       temporaryUrl,
       repositoryUrl,
       sponsorshipType: sponsorshipType as SponsorshipType,

@@ -127,7 +127,6 @@ export function serializeProjectData(data: Record<string, unknown>): ProjectReco
     lguName: String(data.lguName ?? ''),
     province: String(data.province ?? ''),
     description: String(data.description ?? ''),
-    objectives: String(data.objectives ?? ''),
     temporaryUrl: String(data.temporaryUrl ?? ''),
     repositoryUrl: String(data.repositoryUrl ?? ''),
     sponsorshipType: (data.sponsorshipType as SponsorshipType) ?? SponsorshipType.DOMAIN,

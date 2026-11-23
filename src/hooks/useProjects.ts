@@ -41,7 +41,6 @@ export function mapFirestoreProject(data: DocumentData): ProjectRecord {
     lguName: String(data.lguName ?? ''),
     province: String(data.province ?? ''),
     description: String(data.description ?? ''),
-    objectives: String(data.objectives ?? ''),
     temporaryUrl: String(data.temporaryUrl ?? ''),
     repositoryUrl: String(data.repositoryUrl ?? ''),
     sponsorshipType: (data.sponsorshipType as SponsorshipType) ?? SponsorshipType.DOMAIN,

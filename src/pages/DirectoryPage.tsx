@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PlusCircle, RotateCcw, Search } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
 import {
   ProjectAccordionList,
   ProjectAccordionSkeleton,
@@ -115,26 +114,16 @@ export function DirectoryPage() {
     <div>
       {/* Editorial Header Band */}
       <section className="bg-white border-b border-civic-border py-9 sm:py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-end justify-between gap-5 md:gap-6">
-          <div>
-            <p className="text-xs font-semibold text-civic-primary mb-2">Open Civic Registry</p>
-            <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-civic-ink mb-2.5">
-              Public Project Directory
-            </h1>
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
-              Explore independent civic technology projects built for Philippine Local Government
-              Units. Both projects awaiting sponsorship and sponsored projects remain permanently
-              visible.
-            </p>
-          </div>
-
-          <Link
-            to="/submit"
-            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 sm:py-2.5 min-h-11 sm:min-h-0 text-sm font-semibold text-white bg-civic-primary hover:bg-civic-primary-hover rounded-lg shadow-[0_1px_2px_rgba(0,56,168,0.2)] transition-colors whitespace-nowrap shrink-0"
-          >
-            <PlusCircle className="w-4 h-4" aria-hidden="true" />
-            <span>Submit a Project</span>
-          </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-xs font-semibold text-civic-primary mb-2">Open Civic Registry</p>
+          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-civic-ink mb-2.5">
+            Public Project Directory
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+            Explore independent civic technology projects built for Philippine Local Government
+            Units. Both projects awaiting sponsorship and sponsored projects remain permanently
+            visible.
+          </p>
         </div>
       </section>
 
@@ -289,18 +278,10 @@ export function DirectoryPage() {
               </h2>
               <p className="text-sm text-slate-600 leading-relaxed mb-6">
                 {projects.length === 0
-                  ? 'Submit a civic technology project built for a Philippine LGU to launch the directory.'
+                  ? 'Use the Submit a Project button in the header to publish a civic technology project built for a Philippine LGU.'
                   : 'Try broadening your search terms or clearing one of the active filters.'}
               </p>
-              {projects.length === 0 ? (
-                <Link
-                  to="/submit"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-civic-primary hover:bg-civic-primary-hover rounded-lg transition-colors"
-                >
-                  <PlusCircle className="w-4 h-4" aria-hidden="true" />
-                  <span>Submit a Project</span>
-                </Link>
-              ) : (
+              {projects.length > 0 && (
                 <button
                   type="button"
                   onClick={handleResetFilters}

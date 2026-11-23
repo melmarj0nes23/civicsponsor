@@ -94,7 +94,6 @@ export async function onRequestPut(context: PagesContext<{ token: string }>): Pr
       lguName: clean.lguName,
       province: clean.province,
       description: clean.description,
-      objectives: clean.objectives,
       temporaryUrl: clean.temporaryUrl,
       repositoryUrl: clean.repositoryUrl,
       sponsorshipType: clean.sponsorshipType,
@@ -111,6 +110,7 @@ export async function onRequestPut(context: PagesContext<{ token: string }>): Pr
     if ('estimatedCost' in existingData) deleteFieldNames.push('estimatedCost');
     if ('currency' in existingData) deleteFieldNames.push('currency');
     if ('sponsorshipReason' in existingData) deleteFieldNames.push('sponsorshipReason');
+    if ('objectives' in existingData) deleteFieldNames.push('objectives');
 
     if (!wasSponsored && isNowSponsored) {
       updateFields.sponsorshipStatus = SponsorshipStatus.SPONSORED;
