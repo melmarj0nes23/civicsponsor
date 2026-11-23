@@ -20,7 +20,12 @@ import {
   writeBatch,
   type DocumentData,
 } from 'firebase/firestore';
-import { buildSitemapXml, injectRouteSeoIntoHtml } from './functions/_lib/seoHtml.ts';
+import {
+  buildSitemapXml,
+  injectRouteSeoIntoHtml,
+  sortProjectsNewestFirst,
+  type InitialCivicData,
+} from './functions/_lib/seoHtml.ts';
 import {
   buildProjectSlug,
   validateProjectSubmission,
@@ -158,6 +163,19 @@ async function createServer() {
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
+  });
+
+  app.get('/api/projects', async (_req, res) => {
+    try {
+      const q = query(collection(db, 'projects'), where('isPublic', '==', true), limit(200));
+      const snap = await getDocs(q);
+      const projects = sortProjectsNewestFirst(snap.docs.map((d) => serializeProject(d.data())));
+      res.setHeader('Cache-Control', 'public, max-age=15');
+      res.json({ projects });
+    } catch (error) {
+      console.error('Public project list failed:', error instanceof Error ? error.message : error);
+      res.status(500).json({ error: 'Unable to load public projects right now.' });
+    }
   });
 
   app.get('/sitemap.xml', async (_req, res) => {
@@ -512,6 +530,32 @@ async function createServer() {
     return null;
   }
 
+  async function resolveInitialDataForPath(
+    pathname: string,
+  ): Promise<{ project: ProjectRecord | null; initialData: InitialCivicData }> {
+    const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
+    const initialData: InitialCivicData = {};
+
+    if (normalizedPath === '/' || normalizedPath === '/projects') {
+      try {
+        const q = query(collection(db, 'projects'), where('isPublic', '==', true), limit(200));
+        const snap = await getDocs(q);
+        initialData.projects = sortProjectsNewestFirst(
+          snap.docs.map((d) => serializeProject(d.data())),
+        );
+      } catch {
+        // Client hook will still attempt live fetch
+      }
+      return { project: null, initialData };
+    }
+
+    const project = await resolveProjectForPath(normalizedPath);
+    if (project) {
+      initialData.project = project;
+    }
+    return { project, initialData };
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
@@ -525,12 +569,12 @@ async function createServer() {
         const pathname = req.path || '/';
         const template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
         const transformed = await vite.transformIndexHtml(req.originalUrl, template);
-        const project = await resolveProjectForPath(pathname);
+        const { project, initialData } = await resolveInitialDataForPath(pathname);
         if (pathname === '/manage' || pathname.startsWith('/manage/')) {
           res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         }
         res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.end(injectRouteSeoIntoHtml(transformed, pathname, project));
+        res.end(injectRouteSeoIntoHtml(transformed, pathname, project, initialData));
       } catch (err) {
         vite.ssrFixStacktrace(err as Error);
         next(err);
@@ -542,13 +586,13 @@ async function createServer() {
     app.use(express.static(distDir, { index: false }));
     app.get('*', async (req, res) => {
       const pathname = req.path || '/';
-      const project = await resolveProjectForPath(pathname);
+      const { project, initialData } = await resolveInitialDataForPath(pathname);
 
       if (pathname === '/manage' || pathname.startsWith('/manage/')) {
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       }
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.send(injectRouteSeoIntoHtml(distIndexHtml, pathname, project));
+      res.send(injectRouteSeoIntoHtml(distIndexHtml, pathname, project, initialData));
     });
   }
 

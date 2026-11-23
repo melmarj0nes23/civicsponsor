@@ -9,4 +9,5 @@ export interface PagesContext<P extends Record<string, string> = Record<string, 
   env: PagesEnv;
   params: P;
   next: (input?: Request | string, init?: RequestInit) => Promise<Response>;
+  waitUntil?: (promise: Promise<unknown>) => void;
 }

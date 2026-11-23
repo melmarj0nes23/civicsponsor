@@ -7,7 +7,12 @@ import {
 } from '../components/ProjectAccordionList.tsx';
 import { useProjects } from '../hooks/useProjects.ts';
 import { useSeo } from '../hooks/useSeo.ts';
-import { SITE_NAME, SITE_URL, buildBreadcrumbJsonLd } from '../lib/seo.ts';
+import {
+  SITE_NAME,
+  SITE_URL,
+  buildBreadcrumbJsonLd,
+  buildProjectItemListJsonLd,
+} from '../lib/seo.ts';
 import {
   PHILIPPINE_PROVINCES,
   SPONSORSHIP_TYPE_OPTIONS,
@@ -42,10 +47,11 @@ export function DirectoryPage() {
           description:
             'Browse Philippine LGU civic technology projects awaiting domain or hosting sponsorship alongside sponsored community initiatives.',
           isPartOf: { '@id': `${SITE_URL}/#website` },
+          ...(projects.length > 0 ? { mainEntity: buildProjectItemListJsonLd(projects) } : {}),
         },
       ],
     }),
-    [],
+    [projects],
   );
 
   useSeo({

@@ -16,6 +16,46 @@ import {
   type ProjectRecord,
 } from '../types/project.ts';
 
+declare global {
+  interface Window {
+    __INITIAL_CIVIC_DATA__?: {
+      projects?: ProjectRecord[];
+      project?: ProjectRecord | null;
+    };
+  }
+}
+
+function getInitialProjects(): ProjectRecord[] | null {
+  if (typeof window === 'undefined') return null;
+  const list = window.__INITIAL_CIVIC_DATA__?.projects;
+  return Array.isArray(list) ? list : null;
+}
+
+function getInitialProjectForSlug(slugParam: string | undefined): ProjectRecord | null {
+  if (typeof window === 'undefined' || !slugParam) return null;
+  const extractedId = extractProjectIdFromSlug(slugParam);
+  const direct = window.__INITIAL_CIVIC_DATA__?.project;
+  if (
+    direct &&
+    (direct.slug.toLowerCase() === slugParam.toLowerCase() ||
+      (extractedId && direct.projectId.toUpperCase() === extractedId))
+  ) {
+    return direct;
+  }
+
+  const list = window.__INITIAL_CIVIC_DATA__?.projects;
+  if (Array.isArray(list)) {
+    const matched = list.find(
+      (item) =>
+        item.slug.toLowerCase() === slugParam.toLowerCase() ||
+        (extractedId && item.projectId.toUpperCase() === extractedId),
+    );
+    if (matched) return matched;
+  }
+
+  return null;
+}
+
 function toIsoString(value: unknown): string | null {
   if (!value) return null;
   if (value instanceof Timestamp) {
@@ -60,17 +100,40 @@ export function mapFirestoreProject(data: DocumentData): ProjectRecord {
 }
 
 export function useProjects() {
-  const [projects, setProjects] = useState<ProjectRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialList = useMemo(() => getInitialProjects(), []);
+  const [projects, setProjects] = useState<ProjectRecord[]>(() => initialList ?? []);
+  const [loading, setLoading] = useState<boolean>(() => initialList === null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    let receivedLiveSnapshot = false;
+
+    // Fast HTTP fallback for crawlers or restricted networks where WebChannel streams stall
+    if (initialList === null) {
+      fetch('/api/projects')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!active || receivedLiveSnapshot) return;
+          if (data && Array.isArray(data.projects)) {
+            setProjects(data.projects as ProjectRecord[]);
+            setLoading(false);
+            setError(null);
+          }
+        })
+        .catch(() => {
+          // Real-time Firestore listener below remains primary
+        });
+    }
+
     const path = 'projects';
     const projectsQuery = query(collection(db, path), where('isPublic', '==', true));
 
     const unsubscribe = onSnapshot(
       projectsQuery,
       (snapshot) => {
+        if (!active) return;
+        receivedLiveSnapshot = true;
         const items = snapshot.docs.map((docSnap) => mapFirestoreProject(docSnap.data()));
         items.sort((a, b) => {
           const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
@@ -82,8 +145,14 @@ export function useProjects() {
         setError(null);
       },
       (err) => {
+        if (!active) return;
         setLoading(false);
-        setError('Unable to load live project records from the directory.');
+        setProjects((prev) => {
+          if (prev.length === 0 && initialList === null) {
+            setError('Unable to load live project records from the directory.');
+          }
+          return prev;
+        });
         try {
           handleFirestoreError(err, OperationType.LIST, path);
         } catch (wrapped) {
@@ -92,8 +161,11 @@ export function useProjects() {
       },
     );
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [initialList]);
 
   const stats: DirectoryStats = useMemo(() => {
     const totalProjects = projects.length;
@@ -136,8 +208,11 @@ function extractProjectIdFromSlug(slugOrId: string): string | null {
 }
 
 export function useProjectBySlug(slugParam: string | undefined) {
-  const [project, setProject] = useState<ProjectRecord | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialProject = useMemo(() => getInitialProjectForSlug(slugParam), [slugParam]);
+  const [project, setProject] = useState<ProjectRecord | null>(() => initialProject);
+  const [loading, setLoading] = useState<boolean>(() =>
+    slugParam ? initialProject === null : false,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -147,7 +222,13 @@ export function useProjectBySlug(slugParam: string | undefined) {
       return;
     }
 
-    setLoading(true);
+    const hydrated = getInitialProjectForSlug(slugParam);
+    if (hydrated) {
+      setProject(hydrated);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     const extractedId = extractProjectIdFromSlug(slugParam);
@@ -166,7 +247,9 @@ export function useProjectBySlug(slugParam: string | undefined) {
         },
         (err) => {
           setLoading(false);
-          setError('Unable to load project details in real time.');
+          if (!hydrated) {
+            setError('Unable to load project details in real time.');
+          }
           try {
             handleFirestoreError(err, OperationType.GET, path);
           } catch (wrapped) {
@@ -197,7 +280,9 @@ export function useProjectBySlug(slugParam: string | undefined) {
       },
       (err) => {
         setLoading(false);
-        setError('Unable to load project details in real time.');
+        if (!hydrated) {
+          setError('Unable to load project details in real time.');
+        }
         try {
           handleFirestoreError(err, OperationType.LIST, path);
         } catch (wrapped) {

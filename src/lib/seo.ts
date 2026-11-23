@@ -68,6 +68,20 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; path: string 
   };
 }
 
+export function buildProjectItemListJsonLd(projects: ProjectRecord[]) {
+  return {
+    '@type': 'ItemList',
+    name: 'Philippine Civic Technology Projects',
+    numberOfItems: projects.length,
+    itemListElement: projects.slice(0, 50).map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: `${p.projectName} (${p.lguName})`,
+      url: buildCanonicalUrl(`/projects/${p.slug}`),
+    })),
+  };
+}
+
 export function buildProjectSeoMetadata(project: ProjectRecord) {
   const canonicalUrl = buildCanonicalUrl(`/projects/${project.slug}`);
   const title = `${project.projectName} (${project.lguName}) — ${SITE_NAME}`;

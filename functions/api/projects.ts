@@ -1,5 +1,6 @@
 import { buildProjectSlug, validateProjectSubmission } from '../../src/lib/validation.ts';
 import { SponsorshipStatus } from '../../src/types/project.ts';
+import { getCachedPublicProjects, purgePublicProjectCaches } from '../_lib/edgeCache.ts';
 import {
   buildCreateWrite,
   commitWrites,
@@ -9,7 +10,28 @@ import {
   resolveFirestoreConfig,
   sha256Hex,
 } from '../_lib/firestore.ts';
+import { sortProjectsNewestFirst } from '../_lib/seoHtml.ts';
 import type { PagesContext } from '../_lib/types.ts';
+
+export async function onRequestGet(context: PagesContext): Promise<Response> {
+  try {
+    const config = resolveFirestoreConfig(context.env);
+    const projects = sortProjectsNewestFirst(
+      await getCachedPublicProjects(context.request, config, context.waitUntil, 60, 200),
+    );
+    return new Response(JSON.stringify({ projects }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=15, s-maxage=60',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+  } catch (error) {
+    console.error('Public project list failed:', error instanceof Error ? error.message : error);
+    return jsonResponse({ error: 'Unable to load public projects right now.' }, 500);
+  }
+}
 
 export async function onRequestPost(context: PagesContext): Promise<Response> {
   try {
@@ -97,6 +119,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     );
 
     await commitWrites(config, [projectWrite, secretWrite, tokenWrite]);
+    purgePublicProjectCaches(context.request, [slug], context.waitUntil);
 
     return jsonResponse(
       {

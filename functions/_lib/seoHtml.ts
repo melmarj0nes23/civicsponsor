@@ -11,6 +11,19 @@ import {
 } from '../../src/lib/seo.ts';
 import type { ProjectRecord } from '../../src/types/project.ts';
 
+export interface InitialCivicData {
+  projects?: ProjectRecord[];
+  project?: ProjectRecord | null;
+}
+
+export function sortProjectsNewestFirst(projects: ProjectRecord[]): ProjectRecord[] {
+  return [...projects].sort((a, b) => {
+    const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
+    const timeB = b.submittedAt ? Date.parse(b.submittedAt) : 0;
+    return timeB - timeA;
+  });
+}
+
 function escapeHtmlAttr(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -83,11 +96,27 @@ interface ResolvedRouteSeo {
 const INDEX_ROBOTS =
   'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
+function buildProjectItemList(projects: ProjectRecord[]) {
+  return {
+    '@type': 'ItemList',
+    name: 'Philippine Civic Technology Projects',
+    numberOfItems: projects.length,
+    itemListElement: projects.slice(0, 50).map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: `${p.projectName} (${p.lguName})`,
+      url: buildCanonicalUrl(`/projects/${p.slug}`),
+    })),
+  };
+}
+
 export function resolveRouteSeo(
   pathname: string,
   project?: ProjectRecord | null,
+  projects?: ProjectRecord[],
 ): ResolvedRouteSeo {
   const normalized = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
+  const sortedProjects = projects ? sortProjectsNewestFirst(projects) : undefined;
 
   if (normalized === '/') {
     return {
@@ -96,6 +125,13 @@ export function resolveRouteSeo(
       canonicalUrl: `${SITE_URL}/`,
       robots: INDEX_ROBOTS,
       ogType: 'website',
+      jsonLd:
+        sortedProjects && sortedProjects.length > 0
+          ? {
+              '@context': 'https://schema.org',
+              ...buildProjectItemList(sortedProjects),
+            }
+          : null,
     };
   }
 
@@ -119,6 +155,7 @@ export function resolveRouteSeo(
             name: `Public Project Directory — ${SITE_NAME}`,
             url: `${SITE_URL}/projects`,
             isPartOf: { '@id': `${SITE_URL}/#website` },
+            ...(sortedProjects ? { mainEntity: buildProjectItemList(sortedProjects) } : {}),
           },
         ],
       },
@@ -245,8 +282,13 @@ export function injectRouteSeoIntoHtml(
   html: string,
   pathname: string,
   project?: ProjectRecord | null,
+  initialData?: InitialCivicData,
 ): string {
-  const seo = resolveRouteSeo(pathname, project);
+  const sortedProjects = initialData?.projects
+    ? sortProjectsNewestFirst(initialData.projects)
+    : undefined;
+  const resolvedProject = project ?? initialData?.project ?? null;
+  const seo = resolveRouteSeo(pathname, resolvedProject, sortedProjects);
   const titleAttr = escapeHtmlAttr(seo.title);
   const descAttr = escapeHtmlAttr(seo.description);
   const canonicalAttr = escapeHtmlAttr(seo.canonicalUrl);
@@ -322,9 +364,33 @@ export function injectRouteSeoIntoHtml(
     `<meta name="twitter:image:alt" content="${ogImageAltAttr}" />`,
   );
 
+  const headInjections: string[] = [];
+
   if (seo.jsonLd) {
-    const routeScript = `    <script id="route-seo-json-ld" type="application/ld+json">${safeJsonLdString(seo.jsonLd)}</script>\n  </head>`;
-    out = out.replace(/<\/head>/i, routeScript);
+    headInjections.push(
+      `    <script id="route-seo-json-ld" type="application/ld+json">${safeJsonLdString(seo.jsonLd)}</script>`,
+    );
+  }
+
+  if (sortedProjects !== undefined || resolvedProject !== null) {
+    const payload: InitialCivicData = {};
+    if (sortedProjects !== undefined) {
+      payload.projects = sortedProjects;
+    }
+    if (resolvedProject !== null) {
+      payload.project = resolvedProject;
+    }
+    const serialized = JSON.stringify(payload)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026');
+    headInjections.push(
+      `    <script id="initial-civic-data">window.__INITIAL_CIVIC_DATA__=${serialized};</script>`,
+    );
+  }
+
+  if (headInjections.length > 0) {
+    out = out.replace(/<\/head>/i, `${headInjections.join('\n')}\n  </head>`);
   }
 
   return out;

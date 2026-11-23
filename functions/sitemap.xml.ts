@@ -1,11 +1,18 @@
-import { listPublicProjects, resolveFirestoreConfig } from './_lib/firestore.ts';
+import { getCachedPublicProjects } from './_lib/edgeCache.ts';
+import { resolveFirestoreConfig } from './_lib/firestore.ts';
 import { buildSitemapXml } from './_lib/seoHtml.ts';
 import type { PagesContext } from './_lib/types.ts';
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   try {
     const config = resolveFirestoreConfig(context.env);
-    const projects = await listPublicProjects(config, 500);
+    const projects = await getCachedPublicProjects(
+      context.request,
+      config,
+      context.waitUntil,
+      300,
+      500,
+    );
     const xml = buildSitemapXml(projects);
 
     return new Response(xml, {

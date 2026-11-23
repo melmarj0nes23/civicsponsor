@@ -1,5 +1,6 @@
 import { buildProjectSlug, validateProjectUpdate } from '../../../src/lib/validation.ts';
 import { SponsorshipStatus } from '../../../src/types/project.ts';
+import { purgePublicProjectCaches } from '../../_lib/edgeCache.ts';
 import {
   buildUpdateWrite,
   commitWrites,
@@ -139,6 +140,11 @@ export async function onRequestPut(context: PagesContext<{ token: string }>): Pr
     );
 
     await commitWrites(config, [projectWrite, secretWrite]);
+    purgePublicProjectCaches(
+      context.request,
+      [typeof existingData.slug === 'string' ? existingData.slug : null, updatedSlug],
+      context.waitUntil,
+    );
 
     const freshData = await getProjectDocument(projectId, config);
     return jsonResponse({

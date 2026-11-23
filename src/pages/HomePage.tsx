@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, PlusCircle } from 'lucide-react';
 import { CivicImage } from '../components/CivicImage.tsx';
@@ -7,7 +8,11 @@ import {
 } from '../components/ProjectAccordionList.tsx';
 import { useProjects } from '../hooks/useProjects.ts';
 import { useSeo } from '../hooks/useSeo.ts';
-import { DEFAULT_DESCRIPTION, DEFAULT_TITLE } from '../lib/seo.ts';
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_TITLE,
+  buildProjectItemListJsonLd,
+} from '../lib/seo.ts';
 
 const HERO_LOGO_PATH = '/src/assets/images/bettergov-primary.png';
 
@@ -48,10 +53,22 @@ export function HomePage() {
   const { projects, stats, loading, error } = useProjects();
   const recentProjects = projects.slice(0, 6);
 
+  const homeJsonLd = useMemo(
+    () =>
+      projects.length > 0
+        ? {
+            '@context': 'https://schema.org',
+            ...buildProjectItemListJsonLd(projects),
+          }
+        : null,
+    [projects],
+  );
+
   useSeo({
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     path: '/',
+    jsonLd: homeJsonLd,
   });
 
   return (

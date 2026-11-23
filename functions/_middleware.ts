@@ -1,11 +1,12 @@
-import { getProjectBySlug, resolveFirestoreConfig } from './_lib/firestore.ts';
-import { injectRouteSeoIntoHtml } from './_lib/seoHtml.ts';
+import { getCachedProjectBySlug, getCachedPublicProjects } from './_lib/edgeCache.ts';
+import { resolveFirestoreConfig } from './_lib/firestore.ts';
+import { injectRouteSeoIntoHtml, type InitialCivicData } from './_lib/seoHtml.ts';
 import type { PagesContext } from './_lib/types.ts';
 
 const STATIC_EXT_PATTERN = /\.(?:js|mjs|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|json|xml|txt|webmanifest|map)$/i;
 
 export async function onRequest(context: PagesContext): Promise<Response> {
-  const { request, env, next } = context;
+  const { request, env, next, waitUntil } = context;
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return next();
@@ -48,13 +49,25 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     });
   }
 
+  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
+  const config = resolveFirestoreConfig(env);
   let project = null;
-  if (pathname.startsWith('/projects/')) {
-    const slug = decodeURIComponent(pathname.slice('/projects/'.length).replace(/\/+$/, ''));
+  const initialData: InitialCivicData = {};
+
+  if (normalizedPath === '/' || normalizedPath === '/projects') {
+    try {
+      initialData.projects = await getCachedPublicProjects(request, config, waitUntil, 60, 200);
+    } catch {
+      // Fall back to client fetch if edge Firestore call transiently fails
+    }
+  } else if (normalizedPath.startsWith('/projects/')) {
+    const slug = decodeURIComponent(normalizedPath.slice('/projects/'.length));
     if (slug && !slug.includes('/')) {
       try {
-        const config = resolveFirestoreConfig(env);
-        project = await getProjectBySlug(slug, config);
+        project = await getCachedProjectBySlug(request, slug, config, waitUntil, 60);
+        if (project) {
+          initialData.project = project;
+        }
       } catch {
         project = null;
       }
@@ -62,7 +75,7 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   }
 
   const originalHtml = await response.text();
-  const updatedHtml = injectRouteSeoIntoHtml(originalHtml, pathname, project);
+  const updatedHtml = injectRouteSeoIntoHtml(originalHtml, pathname, project, initialData);
   headers.delete('content-length');
 
   return new Response(updatedHtml, {
