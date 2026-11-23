@@ -1,0 +1,29 @@
+{
+  "name": "BetterLGU Civic Sponsorship",
+  "short_name": "BetterLGU",
+  "description": "An open, community-driven civic technology sponsorship directory connecting Philippine LGU civic tech builders with infrastructure sponsors.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0038a8",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

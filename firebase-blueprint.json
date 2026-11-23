@@ -1,0 +1,230 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Civic Tech Project",
+      "description": "A publicly listed Philippine LGU civic technology project seeking or having secured infrastructure sponsorship.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique project reference identifier."
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9\\-]+$",
+          "description": "URL-safe slug combining project name and project reference ID."
+        },
+        "projectName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Public title of the civic technology project."
+        },
+        "lguName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Target municipality, city, or local government unit."
+        },
+        "province": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Philippine province or region (e.g. Metro Manila)."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 1500,
+          "description": "Overview of what the civic tech project does for citizens."
+        },
+        "objectives": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 2000,
+          "description": "Measurable public-interest goals of the project."
+        },
+        "temporaryUrl": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^https?://[a-zA-Z0-9.-]+(:[0-9]{1,5})?(/.*)?$",
+          "description": "Current temporary deployment URL where visitors can inspect the project."
+        },
+        "repositoryUrl": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^https?://[a-zA-Z0-9.-]+(:[0-9]{1,5})?(/.*)?$",
+          "description": "Public source code repository URL."
+        },
+        "sponsorshipType": {
+          "type": "string",
+          "enum": ["Domain Registration", "Hosting", "Domain and Hosting"],
+          "description": "Infrastructure category requested for sponsorship."
+        },
+        "preferredDomain": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]{1,118}[a-zA-Z0-9]$",
+          "description": "Requested domain name for the project."
+        },
+        "maintainerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Maintainer full name or preferred public name."
+        },
+        "maintainerEmail": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 160,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "description": "Public contact email for direct sponsor inquiries."
+        },
+        "maintainerContactLink": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^https?://[a-zA-Z0-9.-]+(:[0-9]{1,5})?(/.*)?$",
+          "description": "Preferred direct contact link such as Facebook, Messenger, or LinkedIn."
+        },
+        "sponsorshipStatus": {
+          "type": "string",
+          "enum": ["Awaiting Sponsorship", "Sponsored"],
+          "description": "Current sponsorship state of the project."
+        },
+        "sponsorshipConfirmationNote": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional public acknowledgment note added when marked as Sponsored."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp recorded when the project was published."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the most recent update."
+        },
+        "sponsoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp recorded when the project transitioned to Sponsored, or null."
+        },
+        "consentTimestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp confirming maintainer public-listing consent."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Explicit public visibility flag for directory list queries."
+        }
+      },
+      "required": [
+        "projectId",
+        "slug",
+        "projectName",
+        "lguName",
+        "province",
+        "description",
+        "objectives",
+        "temporaryUrl",
+        "repositoryUrl",
+        "sponsorshipType",
+        "preferredDomain",
+        "maintainerName",
+        "maintainerEmail",
+        "maintainerContactLink",
+        "sponsorshipStatus",
+        "sponsorshipConfirmationNote",
+        "submittedAt",
+        "updatedAt",
+        "sponsoredAt",
+        "consentTimestamp",
+        "isPublic"
+      ]
+    },
+    "ProjectSecret": {
+      "title": "Project Management Secret",
+      "description": "Write-only private management token hash stored separately from public project listings.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "managementTokenHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tokenProof": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^(|[a-f0-9]{64})$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "projectId",
+        "managementTokenHash",
+        "tokenProof",
+        "createdAt",
+        "lastUsedAt"
+      ]
+    },
+    "ProjectTokenLookup": {
+      "title": "Management Token Lookup",
+      "description": "Domain-separated lookup hash mapping a private management link to its corresponding project ID.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["projectId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Public directory of civic technology projects with zero private credential fields."
+    },
+    "/project_secrets/{projectId}": {
+      "schema": { "$ref": "#/entities/ProjectSecret" },
+      "description": "Non-readable cryptographic management token hash used to authorize atomic project edits."
+    },
+    "/project_tokens/{lookupHash}": {
+      "schema": { "$ref": "#/entities/ProjectTokenLookup" },
+      "description": "Non-listable lookup mapping a domain-separated token hash to a project reference ID."
+    }
+  }
+}

@@ -1,0 +1,322 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable validation primitives
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() >= 6
+        && id.size() <= 64
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidSha256(hash) {
+      return hash is string
+        && hash.size() == 64
+        && hash.matches('^[a-f0-9]{64}$');
+    }
+
+    function isValidUrl(url) {
+      return url is string
+        && url.size() >= 10
+        && url.size() <= 300
+        && url.matches('^https?://[a-zA-Z0-9.-]+(:[0-9]{1,5})?(/.*)?$');
+    }
+
+    function isValidEmail(email) {
+      return email is string
+        && email.size() >= 5
+        && email.size() <= 160
+        && email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+    }
+
+    function isValidDomain(domain) {
+      return domain is string
+        && domain.size() >= 3
+        && domain.size() <= 120
+        && domain.matches('^[a-zA-Z0-9][a-zA-Z0-9.-]{1,118}[a-zA-Z0-9]$');
+    }
+
+    function isValidSlug(slug) {
+      return slug is string
+        && slug.size() >= 6
+        && slug.size() <= 160
+        && slug.matches('^[a-z0-9\\-]+$');
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll([
+          'projectId',
+          'slug',
+          'projectName',
+          'lguName',
+          'province',
+          'description',
+          'objectives',
+          'temporaryUrl',
+          'repositoryUrl',
+          'sponsorshipType',
+          'preferredDomain',
+          'maintainerName',
+          'maintainerEmail',
+          'maintainerContactLink',
+          'sponsorshipStatus',
+          'sponsorshipConfirmationNote',
+          'submittedAt',
+          'updatedAt',
+          'sponsoredAt',
+          'consentTimestamp',
+          'isPublic'
+        ])
+        && data.keys().hasOnly([
+          'projectId',
+          'slug',
+          'projectName',
+          'lguName',
+          'province',
+          'description',
+          'objectives',
+          'temporaryUrl',
+          'repositoryUrl',
+          'sponsorshipType',
+          'preferredDomain',
+          'maintainerName',
+          'maintainerEmail',
+          'maintainerContactLink',
+          'sponsorshipStatus',
+          'sponsorshipConfirmationNote',
+          'submittedAt',
+          'updatedAt',
+          'sponsoredAt',
+          'consentTimestamp',
+          'isPublic'
+        ])
+        && isValidId(data.projectId)
+        && isValidSlug(data.slug)
+        && data.projectName is string && data.projectName.size() >= 2 && data.projectName.size() <= 120
+        && data.lguName is string && data.lguName.size() >= 2 && data.lguName.size() <= 120
+        && data.province is string && data.province.size() >= 2 && data.province.size() <= 80
+        && data.description is string && data.description.size() >= 10 && data.description.size() <= 1500
+        && data.objectives is string && data.objectives.size() >= 10 && data.objectives.size() <= 2000
+        && isValidUrl(data.temporaryUrl)
+        && isValidUrl(data.repositoryUrl)
+        && data.sponsorshipType in ['Domain Registration', 'Hosting', 'Domain and Hosting']
+        && isValidDomain(data.preferredDomain)
+        && data.maintainerName is string && data.maintainerName.size() >= 2 && data.maintainerName.size() <= 100
+        && isValidEmail(data.maintainerEmail)
+        && isValidUrl(data.maintainerContactLink)
+        && data.sponsorshipStatus in ['Awaiting Sponsorship', 'Sponsored']
+        && data.sponsorshipConfirmationNote is string && data.sponsorshipConfirmationNote.size() <= 500
+        && (data.sponsorshipStatus == 'Sponsored' || data.sponsorshipConfirmationNote == '')
+        && data.submittedAt is timestamp
+        && data.updatedAt is timestamp
+        && (data.sponsoredAt == null || data.sponsoredAt is timestamp)
+        && data.consentTimestamp is timestamp
+        && data.isPublic == true;
+    }
+
+    function isValidProjectSecret(data) {
+      return data.keys().hasAll([
+          'projectId',
+          'managementTokenHash',
+          'tokenProof',
+          'createdAt',
+          'lastUsedAt'
+        ])
+        && data.keys().hasOnly([
+          'projectId',
+          'managementTokenHash',
+          'tokenProof',
+          'createdAt',
+          'lastUsedAt'
+        ])
+        && isValidId(data.projectId)
+        && isValidSha256(data.managementTokenHash)
+        && data.tokenProof is string
+        && data.tokenProof.size() <= 64
+        && (data.tokenProof == '' || isValidSha256(data.tokenProof))
+        && data.createdAt is timestamp
+        && data.lastUsedAt is timestamp;
+    }
+
+    function isValidProjectToken(data) {
+      return data.keys().hasAll(['projectId', 'createdAt'])
+        && data.keys().hasOnly(['projectId', 'createdAt'])
+        && isValidId(data.projectId)
+        && data.createdAt is timestamp;
+    }
+
+    function hasValidManagementProof(projectId) {
+      return existsAfter(/databases/$(database)/documents/project_secrets/$(projectId))
+        && getAfter(/databases/$(database)/documents/project_secrets/$(projectId)).data.lastUsedAt == request.time;
+    }
+
+    // Public civic technology project directory
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && (resource == null || existing().isPublic == true);
+      allow list: if existing().isPublic == true;
+
+      // Open anonymous publication: must create matching secret atomically and start as Awaiting Sponsorship
+      allow create: if isValidId(projectId)
+        && isValidProject(incoming())
+        && incoming().projectId == projectId
+        && incoming().sponsorshipStatus == 'Awaiting Sponsorship'
+        && incoming().sponsorshipConfirmationNote == ''
+        && incoming().sponsoredAt == null
+        && incoming().submittedAt == request.time
+        && incoming().updatedAt == request.time
+        && incoming().consentTimestamp == request.time
+        && existsAfter(/databases/$(database)/documents/project_secrets/$(projectId));
+
+      // Token-authorized maintainer updates only (enforced via atomic secret verification)
+      allow update: if isValidId(projectId)
+        && isValidProject(incoming())
+        && incoming().projectId == existing().projectId
+        && incoming().submittedAt == existing().submittedAt
+        && incoming().consentTimestamp == existing().consentTimestamp
+        && incoming().updatedAt == request.time
+        && incoming().isPublic == true
+        && hasValidManagementProof(projectId)
+        && (
+          // Action 1: Update project details without changing sponsorship status
+          (
+            incoming().sponsorshipStatus == existing().sponsorshipStatus
+            && incoming().sponsoredAt == existing().sponsoredAt
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'slug',
+              'projectName',
+              'lguName',
+              'province',
+              'description',
+              'objectives',
+              'temporaryUrl',
+              'repositoryUrl',
+              'sponsorshipType',
+              'preferredDomain',
+              'estimatedCost',
+              'currency',
+              'sponsorshipReason',
+              'maintainerName',
+              'maintainerEmail',
+              'maintainerContactLink',
+              'sponsorshipConfirmationNote',
+              'updatedAt'
+            ])
+          )
+          ||
+          // Action 2: Mark project as Sponsored (with optional confirmation note)
+          (
+            existing().sponsorshipStatus == 'Awaiting Sponsorship'
+            && incoming().sponsorshipStatus == 'Sponsored'
+            && incoming().sponsoredAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'slug',
+              'projectName',
+              'lguName',
+              'province',
+              'description',
+              'objectives',
+              'temporaryUrl',
+              'repositoryUrl',
+              'sponsorshipType',
+              'preferredDomain',
+              'estimatedCost',
+              'currency',
+              'sponsorshipReason',
+              'maintainerName',
+              'maintainerEmail',
+              'maintainerContactLink',
+              'sponsorshipStatus',
+              'sponsorshipConfirmationNote',
+              'sponsoredAt',
+              'updatedAt'
+            ])
+          )
+          ||
+          // Action 3: Return project status to Awaiting Sponsorship
+          (
+            existing().sponsorshipStatus == 'Sponsored'
+            && incoming().sponsorshipStatus == 'Awaiting Sponsorship'
+            && incoming().sponsoredAt == null
+            && incoming().sponsorshipConfirmationNote == ''
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'slug',
+              'projectName',
+              'lguName',
+              'province',
+              'description',
+              'objectives',
+              'temporaryUrl',
+              'repositoryUrl',
+              'sponsorshipType',
+              'preferredDomain',
+              'estimatedCost',
+              'currency',
+              'sponsorshipReason',
+              'maintainerName',
+              'maintainerEmail',
+              'maintainerContactLink',
+              'sponsorshipStatus',
+              'sponsorshipConfirmationNote',
+              'sponsoredAt',
+              'updatedAt'
+            ])
+          )
+        );
+
+      // Preserve sponsored and active listings; no public deletions
+      allow delete: if false;
+    }
+
+    // Private write-only management token hashes (never publicly readable)
+    match /project_secrets/{projectId} {
+      allow read: if false;
+
+      allow create: if isValidId(projectId)
+        && isValidProjectSecret(incoming())
+        && incoming().projectId == projectId
+        && incoming().tokenProof == ''
+        && incoming().createdAt == request.time
+        && incoming().lastUsedAt == request.time
+        && existsAfter(/databases/$(database)/documents/projects/$(projectId));
+
+      allow update: if isValidId(projectId)
+        && isValidProjectSecret(incoming())
+        && incoming().projectId == existing().projectId
+        && incoming().managementTokenHash == existing().managementTokenHash
+        && incoming().createdAt == existing().createdAt
+        && incoming().tokenProof == existing().managementTokenHash
+        && incoming().lastUsedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['tokenProof', 'lastUsedAt']);
+
+      allow delete: if false;
+    }
+
+    // Domain-separated token lookup table (exact key get only; listing forbidden)
+    match /project_tokens/{lookupHash} {
+      allow get: if isValidSha256(lookupHash);
+      allow list: if false;
+
+      allow create: if isValidSha256(lookupHash)
+        && isValidProjectToken(incoming())
+        && incoming().createdAt == request.time
+        && existsAfter(/databases/$(database)/documents/projects/$(incoming().projectId))
+        && existsAfter(/databases/$(database)/documents/project_secrets/$(incoming().projectId));
+
+      allow update, delete: if false;
+    }
+  }
+}

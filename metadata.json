@@ -1,0 +1,6 @@
+{
+  "name": "BetterLGU Civic Sponsorship",
+  "description": "An open, community-driven civic technology sponsorship directory connecting Philippine LGU civic tech builders with infrastructure sponsors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
