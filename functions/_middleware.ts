@@ -25,9 +25,27 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   }
 
   const response = await next();
+  if (response.status >= 300 && response.status < 400) {
+    return response;
+  }
+
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('text/html')) {
     return response;
+  }
+
+  const headers = new Headers(response.headers);
+  headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+  if (pathname === '/manage' || pathname.startsWith('/manage/')) {
+    headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
+  if (request.method === 'HEAD') {
+    return new Response(null, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   }
 
   let project = null;
@@ -45,12 +63,7 @@ export async function onRequest(context: PagesContext): Promise<Response> {
 
   const originalHtml = await response.text();
   const updatedHtml = injectRouteSeoIntoHtml(originalHtml, pathname, project);
-  const headers = new Headers(response.headers);
   headers.delete('content-length');
-
-  if (pathname === '/manage' || pathname.startsWith('/manage/')) {
-    headers.set('X-Robots-Tag', 'noindex, nofollow');
-  }
 
   return new Response(updatedHtml, {
     status: response.status,

@@ -484,49 +484,65 @@ async function createServer() {
     }
   });
 
+  async function resolveProjectForPath(pathname: string): Promise<ProjectRecord | null> {
+    if (!pathname.startsWith('/projects/')) return null;
+    const slug = decodeURIComponent(pathname.slice('/projects/'.length).replace(/\/+$/, ''));
+    if (!slug || slug.includes('/')) return null;
+    try {
+      const idMatch = slug.match(/(blgu-\d{4}-[a-z0-9]{6})$/i);
+      if (idMatch) {
+        const snap = await getDoc(doc(db, 'projects', idMatch[1].toUpperCase()));
+        if (snap.exists() && snap.data().isPublic === true) {
+          return serializeProject(snap.data());
+        }
+      }
+      const q = query(
+        collection(db, 'projects'),
+        where('isPublic', '==', true),
+        where('slug', '==', slug),
+        limit(1),
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        return serializeProject(snap.docs[0].data());
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    app.get('*', async (req, res, next) => {
+      try {
+        const pathname = req.path || '/';
+        const template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+        const transformed = await vite.transformIndexHtml(req.originalUrl, template);
+        const project = await resolveProjectForPath(pathname);
+        if (pathname === '/manage' || pathname.startsWith('/manage/')) {
+          res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        }
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.end(injectRouteSeoIntoHtml(transformed, pathname, project));
+      } catch (err) {
+        vite.ssrFixStacktrace(err as Error);
+        next(err);
+      }
+    });
   } else {
     const distDir = path.resolve(__dirname, 'dist');
     const distIndexHtml = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8');
     app.use(express.static(distDir, { index: false }));
     app.get('*', async (req, res) => {
       const pathname = req.path || '/';
-      let project: ProjectRecord | null = null;
-
-      if (pathname.startsWith('/projects/')) {
-        const slug = decodeURIComponent(pathname.slice('/projects/'.length).replace(/\/+$/, ''));
-        if (slug && !slug.includes('/')) {
-          try {
-            const idMatch = slug.match(/(blgu-\d{4}-[a-z0-9]{6})$/i);
-            if (idMatch) {
-              const snap = await getDoc(doc(db, 'projects', idMatch[1].toUpperCase()));
-              if (snap.exists() && snap.data().isPublic === true) {
-                project = serializeProject(snap.data());
-              }
-            }
-            if (!project) {
-              const q = query(
-                collection(db, 'projects'),
-                where('isPublic', '==', true),
-                where('slug', '==', slug),
-                limit(1),
-              );
-              const snap = await getDocs(q);
-              if (!snap.empty) {
-                project = serializeProject(snap.docs[0].data());
-              }
-            }
-          } catch {
-            project = null;
-          }
-        }
-      }
+      const project = await resolveProjectForPath(pathname);
 
       if (pathname === '/manage' || pathname.startsWith('/manage/')) {
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');

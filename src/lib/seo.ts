@@ -49,7 +49,10 @@ export function buildCanonicalUrl(pathname: string): string {
 export function truncateDescription(text: string, maxLength = 158): string {
   const normalized = text.replace(/\s+/g, ' ').trim();
   if (normalized.length <= maxLength) return normalized;
-  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+  const sliced = normalized.slice(0, maxLength - 1);
+  const lastSpace = sliced.lastIndexOf(' ');
+  const cleanCut = lastSpace > Math.floor(maxLength * 0.6) ? sliced.slice(0, lastSpace) : sliced;
+  return `${cleanCut.replace(/[,;:\-–—]+$/, '').trimEnd()}…`;
 }
 
 export function buildBreadcrumbJsonLd(items: Array<{ name: string; path: string }>) {

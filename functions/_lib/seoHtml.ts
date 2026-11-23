@@ -252,7 +252,7 @@ export function injectRouteSeoIntoHtml(
   const canonicalAttr = escapeHtmlAttr(seo.canonicalUrl);
   const robotsAttr = escapeHtmlAttr(seo.robots);
   const ogImageAttr = escapeHtmlAttr(DEFAULT_OG_IMAGE);
-  const ogImageAltAttr = escapeHtmlAttr(DEFAULT_OG_IMAGE_ALT);
+  const ogImageAltAttr = escapeHtmlAttr(seo.title || DEFAULT_OG_IMAGE_ALT);
 
   let out = html;
   out = replaceTag(out, /<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlText(seo.title)}</title>`);
@@ -315,6 +315,11 @@ export function injectRouteSeoIntoHtml(
     out,
     /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i,
     `<meta name="twitter:description" content="${descAttr}" />`,
+  );
+  out = replaceTag(
+    out,
+    /<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/?>/i,
+    `<meta name="twitter:image:alt" content="${ogImageAltAttr}" />`,
   );
 
   if (seo.jsonLd) {
